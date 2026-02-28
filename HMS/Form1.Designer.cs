@@ -29,90 +29,54 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.btnPatients = new System.Windows.Forms.Button();
-            this.btnDoctors = new System.Windows.Forms.Button();
-            this.btnAppointments = new System.Windows.Forms.Button();
-            this.btnBilling = new System.Windows.Forms.Button();
-            this.btnExit = new System.Windows.Forms.Button();
-            this.labelTitle = new System.Windows.Forms.Label();
-            this.SuspendLayout();
-            // 
-            // labelTitle
-            // 
-            this.labelTitle.AutoSize = true;
-            this.labelTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelTitle.Location = new System.Drawing.Point(24, 20);
-            this.labelTitle.Name = "labelTitle";
-            this.labelTitle.Size = new System.Drawing.Size(260, 32);
-            this.labelTitle.TabIndex = 0;
-            this.labelTitle.Text = "University Clinic - HMS";
-            // 
-            // btnPatients
-            // 
-            this.btnPatients.Location = new System.Drawing.Point(30, 80);
-            this.btnPatients.Name = "btnPatients";
-            this.btnPatients.Size = new System.Drawing.Size(160, 40);
-            this.btnPatients.TabIndex = 1;
-            this.btnPatients.Text = "Patient Management";
-            this.btnPatients.UseVisualStyleBackColor = true;
-            this.btnPatients.Click += new System.EventHandler(this.btnPatients_Click);
-            // 
-            // btnDoctors
-            // 
-            this.btnDoctors.Location = new System.Drawing.Point(210, 80);
-            this.btnDoctors.Name = "btnDoctors";
-            this.btnDoctors.Size = new System.Drawing.Size(160, 40);
-            this.btnDoctors.TabIndex = 2;
-            this.btnDoctors.Text = "Doctor Management";
-            this.btnDoctors.UseVisualStyleBackColor = true;
-            this.btnDoctors.Click += new System.EventHandler(this.btnDoctors_Click);
-            // 
-            // btnAppointments
-            // 
-            this.btnAppointments.Location = new System.Drawing.Point(390, 80);
-            this.btnAppointments.Name = "btnAppointments";
-            this.btnAppointments.Size = new System.Drawing.Size(160, 40);
-            this.btnAppointments.TabIndex = 3;
-            this.btnAppointments.Text = "Book Appointment";
-            this.btnAppointments.UseVisualStyleBackColor = true;
-            this.btnAppointments.Click += new System.EventHandler(this.btnAppointments_Click);
-            // 
-            // btnBilling
-            // 
-            this.btnBilling.Location = new System.Drawing.Point(30, 140);
-            this.btnBilling.Name = "btnBilling";
-            this.btnBilling.Size = new System.Drawing.Size(160, 40);
-            this.btnBilling.TabIndex = 4;
-            this.btnBilling.Text = "Billing";
-            this.btnBilling.UseVisualStyleBackColor = true;
-            this.btnBilling.Click += new System.EventHandler(this.btnBilling_Click);
-            // 
-            // btnExit
-            // 
-            this.btnExit.Location = new System.Drawing.Point(210, 140);
-            this.btnExit.Name = "btnExit";
-            this.btnExit.Size = new System.Drawing.Size(160, 40);
-            this.btnExit.TabIndex = 5;
-            this.btnExit.Text = "Exit";
-            this.btnExit.UseVisualStyleBackColor = true;
-            this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
-            // 
-            // Form1
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.btnExit);
-            this.Controls.Add(this.btnBilling);
-            this.Controls.Add(this.btnAppointments);
-            this.Controls.Add(this.btnDoctors);
-            this.Controls.Add(this.btnPatients);
-            this.Controls.Add(this.labelTitle);
+
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.ClientSize = new System.Drawing.Size(820, 480);
+
+            // Header
+            var header = new Panel { Left = 0, Top = 0, Width = this.ClientSize.Width, Height = 70, BackColor = System.Drawing.Color.FromArgb(10, 60, 120) };
+            var pic = new PictureBox { Left = 12, Top = 8, Width = 56, Height = 56, BackColor = System.Drawing.Color.Gainsboro, BorderStyle = BorderStyle.FixedSingle };
+            var logoImg = HMS.Resources.ResourceHelper.LoadLogo();
+            if (logoImg != null)
+            {
+                pic.Image = logoImg;
+                pic.SizeMode = PictureBoxSizeMode.StretchImage;
+            }
+            var lblTitleMain = new Label { Left = 80, Top = 18, AutoSize = true, Text = "Harare Institute of Technology", ForeColor = System.Drawing.Color.White, Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold) };
+            var lblSubtitle = new Label { Left = 80, Top = 38, AutoSize = true, Text = "Clinic Management Dashboard", ForeColor = System.Drawing.Color.WhiteSmoke, Font = new System.Drawing.Font("Segoe UI", 9F) };
+            header.Controls.Add(pic);
+            header.Controls.Add(lblTitleMain);
+            header.Controls.Add(lblSubtitle);
+
+            // Buttons
+            btnPatients = new System.Windows.Forms.Button { Left = 30, Top = 100, Width = 200, Height = 50, Text = "Patient Management", BackColor = System.Drawing.Color.FromArgb(10, 60, 120), ForeColor = System.Drawing.Color.White, FlatStyle = FlatStyle.Flat };
+            btnPatients.Click += new System.EventHandler(this.btnPatients_Click);
+
+            btnDoctors = new System.Windows.Forms.Button { Left = 250, Top = 100, Width = 200, Height = 50, Text = "Doctor Management", BackColor = System.Drawing.Color.FromArgb(10, 60, 120), ForeColor = System.Drawing.Color.White, FlatStyle = FlatStyle.Flat };
+            btnDoctors.Click += new System.EventHandler(this.btnDoctors_Click);
+
+            btnAppointments = new System.Windows.Forms.Button { Left = 470, Top = 100, Width = 200, Height = 50, Text = "Book Appointment", BackColor = System.Drawing.Color.FromArgb(10, 60, 120), ForeColor = System.Drawing.Color.White, FlatStyle = FlatStyle.Flat };
+            btnAppointments.Click += new System.EventHandler(this.btnAppointments_Click);
+
+            btnBilling = new System.Windows.Forms.Button { Left = 30, Top = 170, Width = 200, Height = 50, Text = "Billing", BackColor = System.Drawing.Color.FromArgb(30, 120, 200), ForeColor = System.Drawing.Color.White, FlatStyle = FlatStyle.Flat };
+            btnBilling.Click += new System.EventHandler(this.btnBilling_Click);
+
+            btnExit = new System.Windows.Forms.Button { Left = 250, Top = 170, Width = 200, Height = 50, Text = "Exit", BackColor = System.Drawing.Color.FromArgb(200, 40, 40), ForeColor = System.Drawing.Color.White, FlatStyle = FlatStyle.Flat };
+            btnExit.Click += new System.EventHandler(this.btnExit_Click);
+
+            // Add to form
+            Controls.Add(header);
+            Controls.Add(btnPatients);
+            Controls.Add(btnDoctors);
+            Controls.Add(btnAppointments);
+            Controls.Add(btnBilling);
+            Controls.Add(btnExit);
+
             this.Name = "Form1";
-            this.Text = "Clinic Dashboard";
+            this.Text = "HIT Clinic Dashboard";
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.ResumeLayout(false);
-            this.PerformLayout();
         }
 
         #endregion
