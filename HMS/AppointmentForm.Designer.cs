@@ -9,10 +9,12 @@ namespace HMS
         private System.ComponentModel.IContainer components = null;
 
         private ComboBox cboPatient, cboDoctor;
+        private ComboBox cboTimeSlots;
         private DateTimePicker dtpDate;
         private TextBox txtReason;
         private Button btnAdd, btnRefresh, btnEdit, btnDelete;
         private DataGridView dgv;
+        private System.Windows.Forms.PictureBox pic;
 
         protected override void Dispose(bool disposing)
         {
@@ -31,49 +33,78 @@ namespace HMS
             this.BackColor = Color.WhiteSmoke;
             this.ClientSize = new Size(820, 560);
 
-            // Header
-            var header = new Panel { Left = 0, Top = 0, Width = this.ClientSize.Width, Height = 70, BackColor = Color.FromArgb(10, 60, 120) };
-            var pic = new PictureBox { Left = 12, Top = 8, Width = 56, Height = 56, BackColor = Color.Gainsboro, BorderStyle = BorderStyle.FixedSingle };
-            var logoImg = HMS.Resources.ResourceHelper.LoadLogo();
-            if (logoImg != null)
-            {
-                pic.Image = logoImg;
-                pic.SizeMode = PictureBoxSizeMode.StretchImage;
-            }
+            // Header (docked)
+            var header = new Panel { Dock = DockStyle.Top, Height = 80, BackColor = Color.FromArgb(10, 60, 120) };
+            pic = new PictureBox { Left = 12, Top = 12, Width = 56, Height = 56, BackColor = Color.Gainsboro, BorderStyle = BorderStyle.FixedSingle };
             var lblHeader = new Label { Left = 84, Top = 18, AutoSize = true, Text = "Harare Institute of Technology", ForeColor = Color.White, Font = new Font("Segoe UI", 14F, FontStyle.Bold) };
-            var lblSub = new Label { Left = 84, Top = 38, AutoSize = true, Text = "Appointment Booking", ForeColor = Color.WhiteSmoke, Font = new Font("Segoe UI", 9F) };
+            var lblSub = new Label { Left = 84, Top = 40, AutoSize = true, Text = "Appointment Booking", ForeColor = Color.WhiteSmoke, Font = new Font("Segoe UI", 9F) };
             header.Controls.Add(pic);
             header.Controls.Add(lblHeader);
             header.Controls.Add(lblSub);
 
-            var lblPatient = new Label { Left = 12, Top = 86, Text = "Patient", Font = new Font("Segoe UI", 9F) };
-            cboPatient = new ComboBox { Left = 80, Top = 82, Width = 320, DropDownStyle = ComboBoxStyle.DropDownList };
+            // Top input panel - uses a TableLayoutPanel for responsive layout
+            var topPanel = new Panel { Dock = DockStyle.Top, Height = 140, BackColor = Color.Transparent };
+            var table = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2 };
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 75F));
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
 
-            var lblDoctor = new Label { Left = 420, Top = 86, Text = "Doctor", Font = new Font("Segoe UI", 9F) };
-            cboDoctor = new ComboBox { Left = 480, Top = 82, Width = 320, DropDownStyle = ComboBoxStyle.DropDownList };
+            // Left side: inputs arranged vertically
+            var inputs = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4, RowCount = 2, Padding = new Padding(8) };
+            inputs.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70)); // label
+            inputs.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F)); // control
+            inputs.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
+            inputs.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            inputs.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+            inputs.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
 
-            var lblDate = new Label { Left = 12, Top = 120, Text = "Date & Time", Font = new Font("Segoe UI", 9F) };
-            dtpDate = new DateTimePicker { Left = 100, Top = 116, Width = 220, Format = DateTimePickerFormat.Custom, CustomFormat = "yyyy-MM-dd HH:mm" };
+            var lblPatient = new Label { Text = "Patient", TextAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 9F) };
+            cboPatient = new ComboBox { Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDownList }; 
 
-            var lblReason = new Label { Left = 340, Top = 120, Text = "Reason", Font = new Font("Segoe UI", 9F) };
-            txtReason = new TextBox { Left = 400, Top = 116, Width = 320 };
+            var lblDoctor = new Label { Text = "Doctor", TextAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 9F) };
+            cboDoctor = new ComboBox { Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDownList };
 
-            btnAdd = new Button { Left = 740, Top = 82, Width = 60, Height = 30, Text = "Add", BackColor = Color.FromArgb(10, 60, 120), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
-            btnAdd.Click += BtnAdd_Click;
+            var lblDate = new Label { Text = "Date", TextAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 9F) };
+            dtpDate = new DateTimePicker { Dock = DockStyle.Fill, Format = DateTimePickerFormat.Custom, CustomFormat = "yyyy-MM-dd" };
 
-            btnEdit = new Button { Left = 740, Top = 122, Width = 60, Height = 30, Text = "Edit", BackColor = Color.FromArgb(30, 120, 200), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
-            btnEdit.Click += BtnEdit_Click;
+            var lblTime = new Label { Text = "Time", TextAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 9F) };
+            var cboTimeSlots = new ComboBox { Dock = DockStyle.Fill, Name = "cboTimeSlots", DropDownStyle = ComboBoxStyle.DropDownList };
+            this.cboTimeSlots = cboTimeSlots;
 
-            btnDelete = new Button { Left = 740, Top = 162, Width = 60, Height = 30, Text = "Delete", BackColor = Color.FromArgb(200, 40, 40), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
-            btnDelete.Click += BtnDelete_Click;
+            var lblReason = new Label { Text = "Reason", TextAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 9F) };
+            txtReason = new TextBox { Dock = DockStyle.Fill };
 
-            btnRefresh = new Button { Left = 740, Top = 202, Width = 60, Height = 30, Text = "Refresh", BackColor = Color.FromArgb(100, 100, 100), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
-            btnRefresh.Click += (s, e) => { LoadLists(); LoadAppointments(); };
+            // Add controls to inputs table (row 0)
+            inputs.Controls.Add(lblPatient, 0, 0);
+            inputs.Controls.Add(cboPatient, 1, 0);
+            inputs.Controls.Add(lblDoctor, 2, 0);
+            inputs.Controls.Add(cboDoctor, 3, 0);
+            // row 1
+            inputs.Controls.Add(lblDate, 0, 1);
+            inputs.Controls.Add(dtpDate, 1, 1);
+            inputs.Controls.Add(lblTime, 2, 1);
+            inputs.Controls.Add(cboTimeSlots, 3, 1);
+            inputs.Controls.Add(lblReason, 0, 2);
+            inputs.Controls.Add(txtReason, 1, 2);
 
-            dgv = new DataGridView { Left = 12, Top = 160, Width = 780, Height = 380, ReadOnly = true, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, BackgroundColor = Color.White, AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle { BackColor = Color.FromArgb(240, 245, 250) }, SelectionMode = DataGridViewSelectionMode.FullRowSelect };
+            // Right side: vertical button panel
+            var btnPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(8), WrapContents = false }; 
+            btnAdd = new Button { Text = "Add", Width = 120, Height = 36, BackColor = Color.FromArgb(10, 60, 120), ForeColor = Color.White, FlatStyle = FlatStyle.Flat }; btnAdd.Click += BtnAdd_Click;
+            btnEdit = new Button { Text = "Edit", Width = 120, Height = 36, BackColor = Color.FromArgb(30, 120, 200), ForeColor = Color.White, FlatStyle = FlatStyle.Flat }; btnEdit.Click += BtnEdit_Click;
+            btnDelete = new Button { Text = "Delete", Width = 120, Height = 36, BackColor = Color.FromArgb(200, 40, 40), ForeColor = Color.White, FlatStyle = FlatStyle.Flat }; btnDelete.Click += BtnDelete_Click;
+            btnRefresh = new Button { Text = "Refresh", Width = 120, Height = 36, BackColor = Color.FromArgb(100, 100, 100), ForeColor = Color.White, FlatStyle = FlatStyle.Flat }; btnRefresh.Click += (s, e) => { LoadLists(); LoadAppointments(); };
+            btnPanel.Controls.AddRange(new Control[] { btnAdd, btnEdit, btnDelete, btnRefresh });
 
+            table.Controls.Add(inputs, 0, 0);
+            table.Controls.Add(btnPanel, 1, 0);
+            topPanel.Controls.Add(table);
+
+            // Data grid - fill the remaining space
+            dgv = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, BackgroundColor = Color.White, AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle { BackColor = Color.FromArgb(240, 245, 250) }, SelectionMode = DataGridViewSelectionMode.FullRowSelect };
+
+            // Add to form
+            Controls.Add(dgv);
+            Controls.Add(topPanel);
             Controls.Add(header);
-            Controls.AddRange(new Control[] { lblPatient, cboPatient, lblDoctor, cboDoctor, lblDate, dtpDate, lblReason, txtReason, btnAdd, btnEdit, btnDelete, btnRefresh, dgv });
         }
     }
 }

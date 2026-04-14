@@ -13,10 +13,93 @@ namespace HMS
         // When editing a patient this holds the id, otherwise 0
         private int _editingPatientId = 0;
 
+        // Allow constructing the form to edit a specific patient by id.
+        // This is useful for embedding the patient editor from other
+        // controls (e.g., PatientsControl double-click).
+        public PatientForm(int patientId) : this()
+        {
+            LoadPatient(patientId);
+        }
+
         public PatientForm()
         {
             InitializeComponent();
+            // load logo after designer initialization
+            try { var logo = HMS.Resources.ResourceHelper.LoadLogo(); if (logo != null && this.pic != null) { this.pic.Image = logo; this.pic.SizeMode = PictureBoxSizeMode.StretchImage; } } catch { }
+            // Make this popup responsive to parent size changes (not applied to LoginForm)
+            EnableResponsivePopup();
             LoadPatients();
+        }
+
+        // Load a patient into the form fields and switch to edit mode.
+        private void LoadPatient(int id)
+        {
+            var patient = ClinicService.Instance.GetPatients().FirstOrDefault(p => p.Id == id);
+            if (patient == null) return;
+
+            txtFirst.Text = patient.FirstName;
+            txtStudentId.Text = patient.StudentId;
+            txtLast.Text = patient.LastName;
+            txtPhone.Text = patient.PhoneNumber;
+            dtpDob.Value = patient.DateOfBirth;
+            _editingPatientId = patient.Id;
+            btnAdd.Text = "Update";
+        }
+
+        // Responsive popup helpers
+        private void EnableResponsivePopup()
+        {
+            // allow resizing and maximize
+            this.StartPosition = FormStartPosition.CenterParent;
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
+
+            this.Shown += (s, e) => AttachToOwner();
+            this.FormClosed += (s, e) => DetachFromOwner();
+        }
+
+        private void AttachToOwner()
+        {
+            if (this.Owner != null)
+            {
+                this.Owner.SizeChanged += Owner_SizeChanged;
+                AdjustToOwner();
+            }
+            else
+            {
+                // If no owner, size to 80% of the working area
+                var wa = Screen.PrimaryScreen.WorkingArea;
+                this.Size = new System.Drawing.Size((int)(wa.Width * 0.8), (int)(wa.Height * 0.8));
+                this.CenterToScreen();
+            }
+        }
+
+        private void DetachFromOwner()
+        {
+            if (this.Owner != null)
+            {
+                this.Owner.SizeChanged -= Owner_SizeChanged;
+            }
+        }
+
+        private void Owner_SizeChanged(object? sender, EventArgs e)
+        {
+            AdjustToOwner();
+        }
+
+        private void AdjustToOwner()
+        {
+            if (this.Owner == null) return;
+            try
+            {
+                var o = this.Owner;
+                var w = Math.Max(600, (int)(o.ClientSize.Width * 0.8));
+                var h = Math.Max(400, (int)(o.ClientSize.Height * 0.8));
+                this.Size = new System.Drawing.Size(w, h);
+                this.StartPosition = FormStartPosition.Manual;
+                this.Location = new System.Drawing.Point(o.Location.X + (o.Width - this.Width) / 2, o.Location.Y + (o.Height - this.Height) / 2);
+            }
+            catch { }
         }
 
         private void BtnAdd_Click(object sender, EventArgs e)
@@ -27,6 +110,7 @@ namespace HMS
                 {
                     FirstName = txtFirst.Text.Trim(),
                     LastName = txtLast.Text.Trim(),
+                    StudentId = txtStudentId.Text.Trim(),
                     DateOfBirth = dtpDob.Value.Date,
                     PhoneNumber = txtPhone.Text.Trim()
                 };
@@ -58,6 +142,7 @@ namespace HMS
         {
             txtFirst.Text = string.Empty;
             txtLast.Text = string.Empty;
+            txtStudentId.Text = string.Empty;
             txtPhone.Text = string.Empty;
             dtpDob.Value = DateTime.Today;
             _editingPatientId = 0;
@@ -83,6 +168,7 @@ namespace HMS
             if (patient == null) return;
 
             txtFirst.Text = patient.FirstName;
+            txtStudentId.Text = patient.StudentId;
             txtLast.Text = patient.LastName;
             txtPhone.Text = patient.PhoneNumber;
             dtpDob.Value = patient.DateOfBirth;
@@ -121,14 +207,32 @@ namespace HMS
 
         private void LoadPatients()
         {
-            var list = ClinicService.Instance.GetPatients().Select(p => new { p.Id, p.FirstName, p.LastName, DateOfBirth = p.DateOfBirth.ToShortDateString(), p.PhoneNumber }).ToList();
-            dgv.DataSource = list;
+            var role = HMS.Services.AuthService.CurrentRole;
+            if (role == HMS.Services.UserRole.Student)
+            {
+                var p = HMS.Services.AuthService.CurrentPatient;
+                var list = new[] { new { p.Id, p.FirstName, p.LastName, p.StudentId, DateOfBirth = p.DateOfBirth.ToShortDateString(), p.PhoneNumber } };
+                dgv.DataSource = list;
+
+                // Disable editing for students
+                btnAdd.Enabled = false;
+                btnEdit.Enabled = false;
+                btnDelete.Enabled = false;
+            }
+            else
+            {
+                var list = ClinicService.Instance.GetPatients().Select(p => new { p.Id, p.FirstName, p.LastName, p.StudentId, DateOfBirth = p.DateOfBirth.ToShortDateString(), p.PhoneNumber }).ToList();
+                dgv.DataSource = list;
+                btnAdd.Enabled = true;
+                btnEdit.Enabled = true;
+                btnDelete.Enabled = true;
+            }
         }
 
         private void SearchPatients()
         {
             var q = txtSearch.Text;
-            var list = ClinicService.Instance.SearchPatients(q).Select(p => new { p.Id, p.FirstName, p.LastName, DateOfBirth = p.DateOfBirth.ToShortDateString(), p.PhoneNumber }).ToList();
+            var list = ClinicService.Instance.SearchPatients(q).Select(p => new { p.Id, p.FirstName, p.LastName, p.StudentId, DateOfBirth = p.DateOfBirth.ToShortDateString(), p.PhoneNumber }).ToList();
             dgv.DataSource = list;
         }
     }

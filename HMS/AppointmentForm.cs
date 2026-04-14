@@ -13,17 +13,86 @@ namespace HMS
         public AppointmentForm()
         {
             InitializeComponent();
+            try { var logo = HMS.Resources.ResourceHelper.LoadLogo(); if (logo != null && this.pic != null) { this.pic.Image = logo; this.pic.SizeMode = PictureBoxSizeMode.StretchImage; } } catch { }
+            // Make popup responsive to parent size changes
+            EnableResponsivePopup();
             LoadLists();
             LoadAppointments();
         }
 
+        private void EnableResponsivePopup()
+        {
+            this.StartPosition = FormStartPosition.CenterParent;
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
+            this.Shown += (s, e) => AttachToOwner();
+            this.FormClosed += (s, e) => DetachFromOwner();
+        }
+
+        private void AttachToOwner()
+        {
+            if (this.Owner != null)
+            {
+                this.Owner.SizeChanged += Owner_SizeChanged;
+                AdjustToOwner();
+            }
+            else { var wa = Screen.PrimaryScreen.WorkingArea; this.Size = new System.Drawing.Size((int)(wa.Width * 0.8), (int)(wa.Height * 0.8)); this.CenterToScreen(); }
+        }
+
+        private void DetachFromOwner()
+        {
+            if (this.Owner != null) this.Owner.SizeChanged -= Owner_SizeChanged;
+        }
+
+        private void Owner_SizeChanged(object? sender, EventArgs e) => AdjustToOwner();
+
+        private void AdjustToOwner()
+        {
+            if (this.Owner == null) return;
+            try
+            {
+                var o = this.Owner;
+                var w = Math.Max(600, (int)(o.ClientSize.Width * 0.8));
+                var h = Math.Max(400, (int)(o.ClientSize.Height * 0.8));
+                this.Size = new System.Drawing.Size(w, h);
+                this.StartPosition = FormStartPosition.Manual;
+                this.Location = new System.Drawing.Point(o.Location.X + (o.Width - this.Width) / 2, o.Location.Y + (o.Height - this.Height) / 2);
+            }
+            catch { }
+        }
+
         private void LoadLists()
         {
-            cboPatient.DataSource = ClinicService.Instance.GetPatients();
-            cboPatient.DisplayMember = "FullName";
+            var role = HMS.Services.AuthService.CurrentRole;
+            if (role == HMS.Services.UserRole.Student)
+            {
+                var p = HMS.Services.AuthService.CurrentPatient;
+                cboPatient.DataSource = new System.Collections.Generic.List<Patient> { p };
+                cboPatient.DisplayMember = "FullName";
+                cboPatient.Enabled = false;
+            }
+            else
+            {
+                cboPatient.DataSource = ClinicService.Instance.GetPatients();
+                cboPatient.DisplayMember = "FullName";
+                cboPatient.Enabled = true;
+            }
 
             cboDoctor.DataSource = ClinicService.Instance.GetDoctors();
             cboDoctor.DisplayMember = "Name";
+
+            // Wire events so time slots refresh when doctor or date changes
+            cboDoctor.SelectedIndexChanged -= (s, e) => { }; // detach safe
+            cboDoctor.SelectedIndexChanged += (s, e) => RefreshTimeSlots();
+            dtpDate.ValueChanged -= (s, e) => { };
+            dtpDate.ValueChanged += (s, e) => RefreshTimeSlots();
+
+            // initial populate of time slots
+            RefreshTimeSlots();
+
+            // Only doctors can edit or delete appointments
+            btnEdit.Enabled = (role == HMS.Services.UserRole.Doctor);
+            btnDelete.Enabled = (role == HMS.Services.UserRole.Doctor);
         }
 
         private void BtnAdd_Click(object sender, EventArgs e)
@@ -32,7 +101,11 @@ namespace HMS
             {
                 var patient = cboPatient.SelectedItem as Patient;
                 var doctor = cboDoctor.SelectedItem as Doctor;
-                var ap = new Appointment { Patient = patient, Doctor = doctor, Date = dtpDate.Value, Reason = txtReason.Text.Trim() };
+                if (cboTimeSlots.SelectedValue == null)
+                    throw new ArgumentException("Please select an available time slot.");
+
+                var selected = (DateTime)cboTimeSlots.SelectedValue;
+                var ap = new Appointment { Patient = patient, Doctor = doctor, Date = selected, Reason = txtReason.Text.Trim() };
 
                 if (_editingAppointmentId == 0)
                 {
@@ -103,9 +176,32 @@ namespace HMS
             }
 
             dtpDate.Value = ap.Date;
+            // refresh and include the current appointment time as selectable
+            RefreshTimeSlots(ap.Date);
+            // select the appointment time
+            try { cboTimeSlots.SelectedValue = ap.Date; } catch { }
             txtReason.Text = ap.Reason;
             _editingAppointmentId = ap.AppointmentId;
             btnAdd.Text = "Update";
+        }
+
+        private void RefreshTimeSlots(DateTime? include = null)
+        {
+            cboTimeSlots.Items.Clear();
+            var doctor = cboDoctor.SelectedItem as Doctor;
+            if (doctor == null) return;
+
+            var slots = ClinicService.Instance.GetAvailableSlots(doctor.Id, dtpDate.Value.Date);
+            // ensure include is present (for editing existing appointment)
+            if (include.HasValue && !slots.Any(s => s == include.Value))
+            {
+                slots.Insert(0, include.Value);
+            }
+
+            var list = slots.Select(dt => new { Time = dt.ToString("HH:mm"), Value = dt }).ToList();
+            cboTimeSlots.DisplayMember = "Time";
+            cboTimeSlots.ValueMember = "Value";
+            cboTimeSlots.DataSource = list;
         }
 
         private void BtnDelete_Click(object sender, EventArgs e)

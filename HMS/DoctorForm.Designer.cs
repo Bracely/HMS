@@ -11,6 +11,7 @@ namespace HMS
         private DataGridView dgv;
         private TextBox txtName, txtSpec;
         private Button btnAdd, btnRefresh, btnEdit, btnDelete;
+        private System.Windows.Forms.PictureBox pic;
 
         protected override void Dispose(bool disposing)
         {
@@ -24,68 +25,67 @@ namespace HMS
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            // Form styling to match Harare Institute of Technology
+            // Form styling
             this.Text = "Harare Institute of Technology - Doctor Management";
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
             this.BackColor = Color.WhiteSmoke;
-            this.ClientSize = new Size(620, 480);
+            this.ClientSize = new Size(800, 520);
 
-            // Header panel
-            var header = new Panel { Left = 0, Top = 0, Width = this.ClientSize.Width, Height = 70, BackColor = Color.FromArgb(10, 60, 120) };
-            var lblHeader = new Label { Left = 84, Top = 18, AutoSize = true, Text = "Harare Institute of Technology", ForeColor = Color.White, Font = new Font("Segoe UI", 14F, FontStyle.Bold) };
-            var lblSub = new Label { Left = 84, Top = 38, AutoSize = true, Text = "Doctor Management", ForeColor = Color.WhiteSmoke, Font = new Font("Segoe UI", 9F, FontStyle.Regular) };
+            // Header (responsive)
+            var header = new Panel { Dock = DockStyle.Top, Height = 72, BackColor = Color.FromArgb(10, 60, 120) };
+            var headerFlow = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight, WrapContents = false, Padding = new Padding(12) };
+            pic = new PictureBox { Size = new Size(56, 56), Margin = new Padding(6), BackColor = Color.Gainsboro, BorderStyle = BorderStyle.FixedSingle, SizeMode = PictureBoxSizeMode.CenterImage };
+            var headerTexts = new Panel { AutoSize = true };
+            var lblHeader = new Label { AutoSize = true, Text = "Harare Institute of Technology", ForeColor = Color.White, Font = new Font("Segoe UI", 14F, FontStyle.Bold), Dock = DockStyle.Top };
+            var lblSub = new Label { AutoSize = true, Text = "Doctor Management", ForeColor = Color.WhiteSmoke, Font = new Font("Segoe UI", 9F), Dock = DockStyle.Top };
+            headerTexts.Controls.Add(lblSub); headerTexts.Controls.Add(lblHeader);
+            headerFlow.Controls.Add(pic); headerFlow.Controls.Add(headerTexts);
+            header.Controls.Add(headerFlow);
 
-            // Logo placeholder (replace with actual logo in designer)
-            var pic = new PictureBox { Left = 12, Top = 8, Width = 56, Height = 56, BackColor = Color.Gainsboro, BorderStyle = BorderStyle.FixedSingle, SizeMode = PictureBoxSizeMode.CenterImage };
-            var logoImg = HMS.Resources.ResourceHelper.LoadLogo();
-            if (logoImg != null)
-            {
-                pic.Image = logoImg;
-                pic.SizeMode = PictureBoxSizeMode.StretchImage;
-            }
+            // Inputs area
+            var inputsFlow = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 72, Padding = new Padding(8), FlowDirection = FlowDirection.LeftToRight, WrapContents = true };
+            var pName = new Panel { Width = 360, Height = 56, Margin = new Padding(6) };
+            var lblName = new Label { Text = "Name", Dock = DockStyle.Top, AutoSize = true };
+            txtName = new TextBox { Dock = DockStyle.Top, Width = 340 };
+            pName.Controls.Add(txtName); pName.Controls.Add(lblName);
 
-            header.Controls.Add(pic);
-            header.Controls.Add(lblHeader);
-            header.Controls.Add(lblSub);
+            var pSpec = new Panel { Width = 360, Height = 56, Margin = new Padding(6) };
+            var lblSpec = new Label { Text = "Specialization", Dock = DockStyle.Top, AutoSize = true };
+            txtSpec = new TextBox { Dock = DockStyle.Top, Width = 340 };
+            pSpec.Controls.Add(txtSpec); pSpec.Controls.Add(lblSpec);
 
-            // Data grid
+            inputsFlow.Controls.AddRange(new Control[] { pName, pSpec });
+
+            // Main grid
             dgv = new DataGridView
             {
-                Left = 10,
-                Top = 100,
-                Width = 600,
-                Height = 320,
+                Dock = DockStyle.Fill,
                 ReadOnly = true,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.FixedSingle,
                 AllowUserToAddRows = false,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle { BackColor = Color.FromArgb(240, 245, 250) }
             };
 
-            var lblName = new Label { Left = 12, Top = 82, Text = "Name", Font = new Font("Segoe UI", 9F, FontStyle.Regular) };
-            txtName = new TextBox { Left = 70, Top = 78, Width = 220 };
-
-            var lblSpec = new Label { Left = 300, Top = 82, Text = "Specialization", Font = new Font("Segoe UI", 9F, FontStyle.Regular) };
-            txtSpec = new TextBox { Left = 400, Top = 78, Width = 180 };
-
-            btnAdd = new Button { Left = 70, Top = 430, Width = 100, Text = "Add", BackColor = Color.FromArgb(10, 60, 120), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            // Bottom toolbar
+            var bottomToolbar = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 56, Padding = new Padding(8), FlowDirection = FlowDirection.LeftToRight, WrapContents = false };
+            btnAdd = new Button { Text = "Add", AutoSize = true, BackColor = Color.FromArgb(10, 60, 120), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Margin = new Padding(6) };
             btnAdd.Click += BtnAdd_Click;
-
-            btnEdit = new Button { Left = 190, Top = 430, Width = 100, Text = "Edit", BackColor = Color.FromArgb(30, 120, 200), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            btnEdit = new Button { Text = "Edit", AutoSize = true, BackColor = Color.FromArgb(30, 120, 200), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Margin = new Padding(6) };
             btnEdit.Click += BtnEdit_Click;
-
-            btnDelete = new Button { Left = 310, Top = 430, Width = 100, Text = "Delete", BackColor = Color.FromArgb(200, 40, 40), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            btnDelete = new Button { Text = "Delete", AutoSize = true, BackColor = Color.FromArgb(200, 40, 40), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Margin = new Padding(6) };
             btnDelete.Click += BtnDelete_Click;
-
-            btnRefresh = new Button { Left = 430, Top = 430, Width = 100, Text = "Refresh", BackColor = Color.FromArgb(100, 100, 100), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            btnRefresh = new Button { Text = "Refresh", AutoSize = true, BackColor = Color.FromArgb(100, 100, 100), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Margin = new Padding(6) };
             btnRefresh.Click += (s, e) => LoadDoctors();
+            bottomToolbar.Controls.AddRange(new Control[] { btnAdd, btnEdit, btnDelete, btnRefresh });
 
             // Add controls
+            Controls.Add(dgv);
+            Controls.Add(bottomToolbar);
+            Controls.Add(inputsFlow);
             Controls.Add(header);
-            Controls.AddRange(new Control[] { lblName, txtName, lblSpec, txtSpec, btnAdd, btnEdit, btnDelete, btnRefresh, dgv });
         }
     }
 }

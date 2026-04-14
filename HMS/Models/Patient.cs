@@ -10,6 +10,8 @@ namespace HMS.Models
 
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        // Optional student ID for university students (e.g., H250504N)
+        public string StudentId { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string PhoneNumber { get; set; }
 
